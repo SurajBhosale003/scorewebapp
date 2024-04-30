@@ -1,10 +1,13 @@
 
 import '../App.css'
 import './Football.css'
+import { useNavigate } from 'react-router-dom'
 
 // import { Link } from 'react-router-dom';
 
 function HeaderNav() {
+
+    const navigator = useNavigate();
   return (
     <div>
  <section className="top-header">
@@ -21,7 +24,7 @@ function HeaderNav() {
                     <a href="#highlights">Pricing</a>
                 </div>
                 <span>
-                    <a className="link-button" href=""><i className="fas fa-sign-in-alt"></i> Login</a>
+                    <a className="link-button" onClick={()=>{navigator("/login")}}><i className="fas fa-sign-in-alt"></i> Login</a>
                 </span>
             </nav>
             {/* Top Navigation Ends */}
