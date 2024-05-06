@@ -1,12 +1,17 @@
-import  { useEffect } from 'react';
+import  { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
+import { useDispatch , useSelector } from 'react-redux';
 import './Auth.css';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import GoogleIcon from '@mui/icons-material/Google';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { signInStart , signInSuccess , signInFailure } from '../../redux/user/userSlice.js';
+import OAuth from '../../Components/OAuth'
 
 function Login() {
   const navigator = useNavigate();
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
@@ -28,10 +33,119 @@ function Login() {
       signInButton.removeEventListener('click', handleSignIn);
     };
   }, []);
+  // User data Update function
+const [formData , setFormData] = useState({});
+const [ signUperror , setSignUpError] = useState(null);
+const [ loading , setLoading] = useState(false);
 
+const handleChangeSignUp = (e) => { 
+    setFormData(
+      {
+        ...formData,
+        [e.target.id]: e.target.value,
+      }
+    )
+};
+
+// user form Signup Submit
+const handleSubmitSignUp = async(e) => { 
+  setLoading(true);
+    e.preventDefault();
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    if (data.success === false) {
+      setSignUpError(data.message);
+      toast.error(signUperror, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+       
+          });
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    console.log(data);
+    setSignUpError(null);
+    navigator('/usercreated')
+    
+};
+
+const [signInformData , setSignInFormData] = useState({});
+// const [ signInerror , setSignInError] = useState(null);
+// const [ signInloading , setSignInLoading] = useState(false);
+const { signInloading , error  } = useSelector((state)=> state.user);
+
+const handleChangeSignInPass = (e) => { 
+  setSignInFormData(
+      {
+        ...signInformData,
+        password: e.target.value,
+      }
+    )
+};
+
+const handleChangeSignInEmail = (e) => { 
+  setSignInFormData(
+      {
+        ...signInformData,
+        email: e.target.value,
+      }
+    )
+};
+
+// user form Signup Submit
+const handleSubmitSignIn = async(e) => { 
+  // setSignInLoading(true);
+
+try {
+  dispatch(signInStart());
+  console.log(signInformData);
+    e.preventDefault();
+    const res = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(signInformData),
+    });
+    const data = await res.json();
+    if (data.success === false) {
+      // setSignInError(data.message);
+      toast.error( error , {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+       
+          });
+          dispatch(signInFailure(data.message));
+      return;
+    }
+    dispatch(signInSuccess(data))
+    navigator('/')
+  }
+  catch(e) { 
+
+    dispatch(signInFailure(e.message));
+  }
+};
+// console.log(formData);
 
   return (
     <>
+     <ToastContainer />
     <div className="main-login">
 
     <button className='link-buttonAuth' onClick={()=>{navigator("/")}}>Home</button>
@@ -39,34 +153,30 @@ function Login() {
       <div className="container" id="container">
         <div className="form-container sign-up-container">
           {/* Sign Up code */}
-          <form action="#">
+          <form onSubmit={handleSubmitSignUp}>
             <h1>Create Account</h1>
-            <div className="social-container">
-            <a href="#" className="social"><FacebookIcon /></a>
-              <a href="#" className="social"><GoogleIcon /></a>
-              <a href="#" className="social"><LinkedInIcon /></a>
-            </div>
+            <OAuth/>
             <span>or use your email for registration</span>
-            <input type="text" placeholder="Name" />
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
-            <button className='btn'>Sign Up</button>
+            <input type="text" placeholder="Full Name" id='fullName' onChange={handleChangeSignUp}/>
+            <input type="email" placeholder="Email" id='email' onChange={handleChangeSignUp}/>
+            <input type="password" placeholder="Password" id='password' onChange={handleChangeSignUp}/>
+            <button className='btn' disabled={loading}>
+              {loading ? "Loading..." : "Sign Up"}
+            </button>
           </form>
         </div>
         <div className="form-container sign-in-container"> 
         {/* Sign In code  */}
-          <form action="#">
+          <form onSubmit={handleSubmitSignIn}>
             <h1>Sign in</h1>
-            <div className="social-container">
-            <a href="#" className="social"><FacebookIcon /></a>
-              <a href="#" className="social"><GoogleIcon /></a>
-              <a href="#" className="social"><LinkedInIcon /></a>
-            </div>
+          <OAuth/>
             <span>or use your account</span>
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
+            <input type="email" placeholder="Email"   onChange={handleChangeSignInEmail} />
+            <input type="password" placeholder="Password"  onChange={handleChangeSignInPass} />
             <a href="#">Forgot your password?</a>
-            <button className='btn'>Sign In</button>
+            <button className='btn' disabled={signInloading}>
+              {signInloading ? "Loading..." : "Sign In"}
+            </button>
           </form>
         </div>
         <div className="overlay-container">

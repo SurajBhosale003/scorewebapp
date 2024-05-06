@@ -24,7 +24,7 @@ function HeaderNav() {
                     <a href="#highlights">Pricing</a>
                 </div>
                 <span>
-                    <a className="link-button" onClick={()=>{navigator("/login")}}><i className="fas fa-sign-in-alt"></i> Login</a>
+                    <a className="link-button" onClick={()=>{navigator("/auth")}}><i className="fas fa-sign-in-alt"></i> Login</a>
                 </span>
             </nav>
             {/* Top Navigation Ends */}
